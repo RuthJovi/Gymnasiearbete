@@ -1,0 +1,47 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolutionssimulatorn</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a href="start.html"> <-- Till startsidan</a>
+
+    <div id="container">
+        <div>
+            <canvas id="simulator"></canvas>
+
+            <div id="bottom-info">
+                <br>
+                <p>Here you will be able to change the environment factors (temperature and food supply)</p>
+            </div>
+        </div>
+    
+        <div id="infopanel">
+            <section id="infoheader">
+                <h3>Stats</h3>
+                <hr>
+            </section>
+            <p id="population-counter">Population: 10</p>
+            <p>Here you will see the individual stats of the organisms</p>
+        </div>
+    </div>
+
+    <div id="bottom-container">
+        <div>
+            <p id="month-counter">Months passed: 0</p>
+            <p></p>
+        </div>
+        <div>
+            <button id="forward-btn">Forward one month</button>
+            <button id="reset-btn">Reset sim</button>
+        </div>
+    </div>
+
+    <script src="organism.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
