@@ -5,7 +5,7 @@
     <title>Evolutionssimulatorn</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body style="font-family: Arial;">
 
     <a href="start.html"> <-- Till startsidan</a>
 
@@ -15,7 +15,22 @@
 
             <div id="bottom-info">
                 <br>
-                <p>Here you will be able to change the environment factors (temperature and food supply)</p>
+                <div class="factor-div">
+                    <p>Temperatur:</p>
+                    <p id="temp-count">20 C</p>
+                    <div>
+                        <button class="red-btn" onclick="decreaseTemp()">-</button>
+                        <button class="green-btn" onclick="increaseTemp()">+</button>
+                    </div>
+                </div>
+                <div class="factor-div">
+                    <p>Tillgänglig föda:</p>
+                    <p id="food-count">100%</p>
+                    <div>
+                        <button class="red-btn" onclick="decreaseFood()">-</button>
+                        <button class="green-btn" onclick="increaseFood()">+</button>
+                    </div>
+                </div>
             </div>
         </div>
     
@@ -24,22 +39,24 @@
                 <h3>Stats</h3>
                 <hr>
             </section>
-            <p id="population-counter">Population: 10</p>
-            <p>Here you will see the individual stats of the organisms</p>
+            <p id="population-counter">Befolkning: 10</p>
+            <br>
+            <p id="stamina-counter"></p>
         </div>
     </div>
 
     <div id="bottom-container">
         <div>
-            <p id="month-counter">Months passed: 0</p>
+            <p id="month-counter">Månad: 0</p>
             <p></p>
         </div>
         <div>
-            <button id="forward-btn">Forward one month</button>
-            <button id="reset-btn">Reset sim</button>
+            <button id="forward-btn" class="green-btn" onclick="newMonth()">Framåt en månad</button>
+            <button id="reset-btn" class="red-btn" onclick="resetGame()">Börja om</button>
         </div>
     </div>
 
+    <script src="settings.js"></script>
     <script src="organism.js"></script>
     <script src="script.js"></script>
 

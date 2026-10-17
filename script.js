@@ -7,6 +7,7 @@ let ctx = canvas.getContext("2d");
 canvas.width = 700;
 canvas.height = 400;
 
+
 //Check if there is a saved game, if there isnt, add 10 random organisms
 if (!loadGame()){
     createStartingOrganisms();
@@ -15,8 +16,6 @@ if (!loadGame()){
 drawOrganisms();
 //using the saved data, display the current population and month
 updateInfo(0); //when reloading, do not showcase the change in population
-
-document.getElementById("forward-btn").addEventListener("click", newMonth);
 
 function createStartingOrganisms(){
     for (let i = 0; i < 10; i++) {
@@ -32,11 +31,24 @@ function createStartingOrganisms(){
 }
 
 function updateInfo(popChange){
-    document.getElementById("population-counter").textContent = "Population: " + organisms.length;
-    if(popChange){ //when there is a population change, display it
-        document.getElementById("population-counter").textContent = "Population: " + organisms.length + "   Change: " + (organisms.length - popChange);
+    document.getElementById("population-counter").textContent = "Befolkning: " + organisms.length;
+    if(popChange){ //when there is a change in population, display it
+        document.getElementById("population-counter").textContent = "Befolkning: " + organisms.length + "   Förändring: " + (organisms.length - popChange);
     }
-    document.getElementById("month-counter").textContent = "Months passed: " + currentMonth;  
+
+    document.getElementById("month-counter").textContent = "Månad: " + currentMonth;  
+
+    let avgStamina = calculateAverage(organisms, "stamina");
+    document.getElementById("stamina-counter").textContent = "Genomsnittlig uthållighet: " + avgStamina;
+
+}
+
+function calculateAverage(array, parameter){
+    let sum = 0;
+    for (let i = 0; i < array.length; i++){
+        sum += array[i][parameter]; //if "stamina", it becomes array[i].stamina
+    }
+    return sum / array.length
 }
 
 function newMonth(){ // updates stats for all organisms
@@ -57,23 +69,28 @@ function newMonth(){ // updates stats for all organisms
         //surviving organisms get added, therefore automatically removing the dead ones
         survivingOrganisms.push(organism);
 
-        // Action
         let action = Math.random() * 100;
 
         if (action < 20) { // 20% chance to do nothing
-            organism.energy -= 10; // Decrease energy
-            console.log("Organism #" + organism.id + " did nothing. Age: " + organism.age + " Energy: " + organism.energy)
+            organism.energy -= 15; // Decrease energy
+            if (organism.energy < 0) {organism.energy = 0;} // Cap energy at 0
+            console.log("Organism #" + organism.id + " did nothing. Age: " 
+                + organism.age + " Energy: " + organism.energy + " Stamina: " 
+                + organism.stamina + " Survival chance: " + survivalChance)
         }
         else if (action < 80) { // 60% chance to find food
-            organism.energy += 20; // Increase energy 
+            organism.energy += findFoodEnergy; // Increase energy 
             if (organism.energy > 100) {organism.energy = 100;} // Cap energy at 100
-            console.log("Organism #" + organism.id + " found food. Age: " + organism.age + " Energy: " + organism.energy)
+            console.log("Organism #" + organism.id + " found food. Age: "
+                 + organism.age + " Energy: " + organism.energy)
         }
         else { // 20% chance to reproduce
-            let child = organism.reproduce();
+            let child = organism.reproduce(organism.color, organism.size, organism.iq, organism.stamina, organism.resistance, organism.efficiency);
             newOrganisms.push(child);
             organism.energy -= reprEnergyLoss; // Decrease energy 
-            console.log("Organism #" + organism.id + " reproduced. Age: " + organism.age + " Energy: " + organism.energy)
+            console.log("Organism #" + organism.id + " reproduced. Age: " + organism.age + " Energy: " + organism.energy +
+                "   Parent stamina: " + organism.stamina + " Child stamina: " + child.stamina
+            )
         }
     }
 
@@ -84,8 +101,7 @@ function newMonth(){ // updates stats for all organisms
     
     drawOrganisms(); 
     saveGame();
-    //update written info on screen
-    updateInfo(previousPopulation);
+    updateInfo(previousPopulation); //update written info on screen
 
 }
 
@@ -104,20 +120,11 @@ function drawOrganisms(){
             Math.PI * 2
         );
 
-       /*
-        if(organism.color === 1){ctx.fillStyle = "#ff00dd"}
-        else if (organism.color === 2){ctx.fillStyle = "#ff69e8"}
-        else if (organism.color === 3){ctx.fillStyle = "#ee00ff"}
-        else if (organism.color === 4){ctx.fillStyle = "#7700b8"}
-        else{ctx.fillStyle = "#cf126a"}
-        ctx.fill();
-        */
-
-        if(organism.color === 1){ctx.fillStyle = "#0c9275"}
-        else if (organism.color === 2){ctx.fillStyle = "#29524A"}
-        else if (organism.color === 3){ctx.fillStyle = "#0bc5cb"}
-        else if (organism.color === 4){ctx.fillStyle = "#08a742"}
-        else{ctx.fillStyle = "#106bc5"}
+        if(organism.color === 1){ctx.fillStyle = color1}
+        else if (organism.color === 2){ctx.fillStyle = color2}
+        else if (organism.color === 3){ctx.fillStyle = color3}
+        else if (organism.color === 4){ctx.fillStyle = color4}
+        else{ctx.fillStyle = color5}
         ctx.fill();
     }
 }
@@ -130,9 +137,11 @@ function saveGame(){
     // save global variables that shouldnt reset when the page is reloaded
     localStorage.setItem("currentMonth", currentMonth);
     localStorage.setItem("nextId", nextId);
+    localStorage.setItem("temp", temp);
+    localStorage.setItem("food", food);
 }
 
-function loadGame() { //function 
+function loadGame() { 
 
     let savedOrganisms = localStorage.getItem("organisms");
 
@@ -161,6 +170,10 @@ function loadGame() { //function
 
         currentMonth = Number(localStorage.getItem("currentMonth"));
         nextId = Number(localStorage.getItem("nextId"));
+        temp = Number(localStorage.getItem("temp"));
+        food = Number(localStorage.getItem("food"));
+        document.getElementById("temp-count").innerText = temp + " C";
+        document.getElementById("food-count").innerText = food + "%";
 
         return true;
     }
@@ -168,11 +181,9 @@ function loadGame() { //function
     return false; //if there is no saved data, return false
 }
 
-document.getElementById("reset-btn").addEventListener("click", resetGame);
-
 function resetGame() {
 
-    if (!confirm(`Are you sure you want to reset the game?`)){ // ask for confirmation before reseting
+    if (!confirm(`Är du säker på att du vill börja om?`)){ // ask for confirmation before reseting
         return; //stop the function if no
     }
 
@@ -185,6 +196,8 @@ function resetGame() {
     organisms = [];
     currentMonth = 0;
     nextId = 1;
+    temp = 20;
+    food = 100;
 
     // Create 10 new organisms
     createStartingOrganisms();
@@ -194,6 +207,42 @@ function resetGame() {
     drawOrganisms();
     // Update information on screen
     updateInfo(0);
+    document.getElementById("temp-count").innerText = temp + ' C';
+    document.getElementById("food-count").innerText = food + '%';
+}
+
+//changes and saves the environmental variables in local storage
+function increaseTemp(){ 
+    for(let i = 0; i < 2; i++){
+        temp++;  
+        if(temp < -50){temp = -50}; if(temp > 70){temp = 70};
+    }
+    document.getElementById("temp-count").innerText = temp + ' C';
+    localStorage.setItem("temp", temp);
+}
+function decreaseTemp(){
+    for(let i = 0; i < 2; i++){
+        temp--;  
+        if(temp < -50){temp = -50}; if(temp > 70){temp = 70};
+    }
+    document.getElementById("temp-count").innerText = temp + ' C';
+    localStorage.setItem("temp", temp);
+}
+function increaseFood(){
+    for(let i = 0; i < 5; i++){
+        food++;
+        if(food < 0){food = 0}; if(food > 200){food = 200};
+    }
+    document.getElementById("food-count").innerText = food + '%';
+    localStorage.setItem("food", food);
+}
+function decreaseFood(){
+    for(let i = 0; i < 5; i++){
+        food--;
+        if(food < 0){food = 0}; if(food > 200){food = 200};
+    }
+    document.getElementById("food-count").innerText = food + '%';
+    localStorage.setItem("food", food);
 }
 
 
